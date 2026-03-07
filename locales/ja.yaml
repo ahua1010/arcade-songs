@@ -138,6 +138,9 @@ sfc:
     songsCount: '{n} 歌曲'
   SheetDialog:
     searchOnYouTube: YouTube で検索
+    playOnYouTube: YouTube で再生
+    youtubePreview: YouTube プレビュー
+    youtubeViews: '{count} 回再生'
     tryAgain: もう一回
   SheetComboDialog:
     drawResults: 抽選結果

@@ -40,6 +40,10 @@ const {
 
 const imageErrorOccurred = ref(false);
 const copyHintOpened = ref(false);
+const showVideoDialog = ref(false);
+
+const youtubeVideoId = computed(() => sheet.value.video?.youtube?.id);
+const youtubeViewCount = computed(() => sheet.value.video?.youtube?.viewCount ?? null);
 
 const data = computed(() => dataStore.currentData);
 const imageSrc = computed(() => {
@@ -135,6 +139,26 @@ watch(isOpened, () => {
           class="d-flex flex-column pa-3"
           style="position: absolute; bottom: 0; right: 0; gap: 8px;"
         >
+          <v-tooltip v-if="youtubeVideoId" top>
+            <template #activator="{ on }">
+              <v-btn
+                :fab="$vuetify.breakpoint.xsOnly"
+                :text="$vuetify.breakpoint.smAndUp"
+                color="red"
+                class="white--text"
+                v-on="on"
+                @click="showVideoDialog = true;"
+              >
+                <v-icon :large="$vuetify.breakpoint.smAndUp">
+                  mdi-play-circle
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>
+              {{ $t('sfc.SheetDialog.playOnYouTube') }}
+            </span>
+          </v-tooltip>
+
           <v-tooltip v-if="sheet.searchUrl !== null" top>
             <template #activator="{ on }">
               <v-btn
@@ -324,6 +348,41 @@ watch(isOpened, () => {
         </v-btn>
       </v-card-actions>
     </v-card>
+
+    <v-dialog v-model="showVideoDialog" max-width="800px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h6">
+            {{ $t('sfc.SheetDialog.youtubePreview') }}
+          </span>
+        </v-card-title>
+
+        <v-card-text>
+          <div class="d-flex flex-column" style="gap: 12px;">
+            <div class="video-embed" v-if="youtubeVideoId">
+              <iframe
+                :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`"
+                width="100%"
+                height="450"
+                frameborder="0"
+                allow="autoplay; encrypted-media"
+                allowfullscreen
+              />
+            </div>
+            <div v-if="youtubeViewCount != null" class="text-caption">
+              {{ $t('sfc.SheetDialog.youtubeViews', { count: youtubeViewCount }) }}
+            </div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text color="primary" @click="showVideoDialog = false;">
+            {{ $t('ui.close') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-snackbar v-model="copyHintOpened" :timeout="750">
       <v-icon left color="success">

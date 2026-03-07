@@ -19,6 +19,21 @@ export type Song = {
   comment?: string;
 
   sheets: Sheet[];
+
+  video?: {
+    youtube?: {
+      id: string;
+      url: string;
+      viewCount?: number | null;
+      updatedAt?: string;
+    };
+    niconico?: {
+      id: string;
+      url: string;
+      viewCount?: number | null;
+      updatedAt?: string;
+    };
+  };
 } & {
   // added by preprocessing
   songNo: number;

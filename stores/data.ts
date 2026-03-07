@@ -66,6 +66,22 @@ export const useDataStore = defineStore('data', () => {
       const response = await fetch(`${dataSourceUrl}/data.json`);
       const data = await response.json() as Data;
 
+      // Optionally load video metadata (YouTube / NicoNico) if available
+      try {
+        const videoResponse = await fetch(`${dataSourceUrl}/video.json`);
+        if (videoResponse.ok) {
+          const videoData = await videoResponse.json() as { videos: Record<string, any> };
+          for (const song of data.songs) {
+            if (song.songId && videoData.videos?.[song.songId]) {
+              // eslint-disable-next-line no-param-reassign
+              (song as any).video = videoData.videos[song.songId];
+            }
+          }
+        }
+      } catch {
+        // Ignore missing video metadata
+      }
+
       preprocessData(data, dataSourceUrl, gameCode);
 
       setLoadedData(data);

@@ -138,6 +138,9 @@ sfc:
     songsCount: '{n} songs'
   SheetDialog:
     searchOnYouTube: Search on YouTube
+    playOnYouTube: Play on YouTube
+    youtubePreview: YouTube Preview
+    youtubeViews: '{count} views'
     tryAgain: TRY AGAIN
   SheetComboDialog:
     drawResults: Draw Results

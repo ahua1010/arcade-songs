@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from '@nuxtjs/composition-api';
 import useDarkMode from '~/composables/useDarkMode';
 import useGameInfo from '~/composables/useGameInfo';
 import useGameData from '~/composables/useGameData';

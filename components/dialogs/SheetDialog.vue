@@ -359,8 +359,9 @@ watch(isOpened, () => {
 
         <v-card-text>
           <div class="d-flex flex-column" style="gap: 12px;">
-            <div class="video-embed" v-if="youtubeVideoId">
+            <div class="video-embed" v-if="showVideoDialog && youtubeVideoId">
               <iframe
+                :key="youtubeVideoId"
                 :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`"
                 width="100%"
                 height="450"

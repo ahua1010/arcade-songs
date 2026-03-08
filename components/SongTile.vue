@@ -150,7 +150,8 @@ function openYouTube() {
   .CoverContainer {
     display: inline-block;
     position: relative;
-      z-index: 2;
+    z-index: 2;
+    box-shadow:
       0 10px 10px rgb(0 0 0 / 22%);
     transition: transform 250ms;
 

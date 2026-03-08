@@ -88,7 +88,9 @@ export const useDataStore = defineStore('data', () => {
         }
       }
 
-      // Optionally load video metadata (YouTube / NicoNico) if available
+      // Optionally load video metadata (YouTube / NicoNico) if available.
+      // If fetching the JSON fails (e.g. because the site is behind auth), fall back to the
+      // locally bundled JSON in `static/<gameCode>/video.json`.
       try {
         const videoUrl = typeof window !== 'undefined'
           ? `/${gameCode}/video.json`
@@ -105,9 +107,20 @@ export const useDataStore = defineStore('data', () => {
           }
         }
       } catch (err) {
-        // Ignore missing video metadata (e.g. on SSR or if file isn’t available)
-        // eslint-disable-next-line no-console
-        console.warn('Failed to load video metadata', err);
+        // Fallback: try to load the bundled static JSON (may be available even if the route is protected)
+        try {
+          // NOTE: dynamic import uses webpack alias; this makes it work in both build and dev.
+          const videoData = (await import(`~/static/${gameCode}/video.json`)) as { videos: Record<string, any> };
+          for (const song of data.songs) {
+            if (song.songId && videoData.videos?.[song.songId]) {
+              // eslint-disable-next-line no-param-reassign
+              (song as any).video = videoData.videos[song.songId];
+            }
+          }
+        } catch (innerErr) {
+          // eslint-disable-next-line no-console
+          console.warn('Failed to load video metadata', err, innerErr);
+        }
       }
 
       preprocessData(data, dataSourceUrl, gameCode);

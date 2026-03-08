@@ -1,4 +1,4 @@
-import { ref, computed, watch } from '@nuxtjs/composition-api';
+import { ref, computed, reactive, watch } from '@nuxtjs/composition-api';
 import { defineStore } from 'pinia';
 import useSentry from '~/composables/useSentry';
 import LoadingStatus from '~/enums/LoadingStatus';
@@ -80,10 +80,12 @@ export const useDataStore = defineStore('data', () => {
         data = await response.json() as Data;
       }
 
-      // Ensure video property exists for reactivity in Vue 2/Pinia
+      // Ensure video property exists for reactivity in Vue 2/Pinia.
+      // Use a reactive object so internal fields (e.g. youtube.id) can update the UI.
       for (const song of data.songs) {
-        if (!(song as any).video) {
-          (song as any).video = {};
+        const songAny = song as any;
+        if (!songAny.video) {
+          songAny.video = reactive({});
         }
       }
 
@@ -109,7 +111,7 @@ export const useDataStore = defineStore('data', () => {
             // Ensure we mutate the existing `video` object rather than replace it.
             // This keeps Vue 2 reactivity working correctly.
             const songAny = song as any;
-            songAny.video = songAny.video ?? {};
+            songAny.video = songAny.video ?? reactive({});
             Object.assign(songAny.video, videoData.videos[song.songId]);
           }
         }
@@ -128,7 +130,7 @@ export const useDataStore = defineStore('data', () => {
               // Ensure we mutate the existing `video` object rather than replace it.
               // This keeps Vue 2 reactivity working correctly.
               const songAny = song as any;
-              songAny.video = songAny.video ?? {};
+              songAny.video = songAny.video ?? reactive({});
               Object.assign(songAny.video, videoData.videos[song.songId]);
             }
           }

@@ -42,6 +42,20 @@ const {
 const isSheetSelected = computed(
   () => selectedSheets.value.includes(getCanonicalSheet(props.sheet)),
 );
+
+const youtubeUrl = computed(() => props.sheet.video?.youtube?.url ?? null);
+const youtubeViewCount = computed(() => props.sheet.video?.youtube?.viewCount ?? null);
+const youtubeLabel = computed(() => (
+  youtubeViewCount.value != null
+    ? `${youtubeViewCount.value.toLocaleString()} views`
+    : 'Play'
+));
+
+function openYouTube() {
+  if (youtubeUrl.value) {
+    window.open(youtubeUrl.value, '_blank');
+  }
+}
 </script>
 
 <template>
@@ -146,6 +160,20 @@ const isSheetSelected = computed(
               class="SheetInternalLevel"
               v-text="sheet.internalLevel"
             />
+
+            <!-- YouTube play + view count overlay -->
+            <div
+              v-if="youtubeUrl"
+              class="YoutubeOverlay"
+              @click.stop.prevent="openYouTube"
+            >
+              <v-icon small class="YoutubeIcon">
+                mdi-play-circle
+              </v-icon>
+              <span class="YoutubeLabel">
+                {{ youtubeLabel }}
+              </span>
+            </div>
           </div>
         </div>
       </template>
@@ -211,6 +239,7 @@ const isSheetSelected = computed(
   .CoverContainer {
     display: inline-block;
     position: relative;
+    z-index: 2;
     box-shadow:
       // the gray shadows
       0 14px 28px rgb(0 0 0 / 25%),
@@ -230,6 +259,9 @@ const isSheetSelected = computed(
       top: 0;
       left: 0;
       padding: 3px 6px;
+
+      // make sure the necessary elements appear above the blocking panel
+      z-index: 3;
 
       // text
       font-weight: bold;
@@ -258,6 +290,27 @@ const isSheetSelected = computed(
       overflow: hidden;
       max-width: 100%;
       max-height: 100%;
+    }
+
+    .YoutubeOverlay {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      z-index: 4;
+    }
+
+    .YoutubeIcon,
+    .YoutubeLabel {
+      color: white;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+    }
+
+    .YoutubeLabel {
+      font-size: 0.8rem;
     }
 
     .SheetInternalLevel {

@@ -57,12 +57,16 @@ const youtubeLabel = computed(() => (
     : 'Play'
 ));
 
-const showVideoDialog = ref(false);
+const showPlayer = ref(false);
 
-function openYouTube() {
+function openPlayer() {
   if (youtubeVideoId.value) {
-    showVideoDialog.value = true;
+    showPlayer.value = true;
   }
+}
+
+function closePlayer() {
+  showPlayer.value = false;
 }
 </script>
 
@@ -171,9 +175,9 @@ function openYouTube() {
 
             <!-- YouTube play + view count overlay -->
             <div
-              v-if="youtubeUrl"
+              v-if="youtubeUrl && !showPlayer"
               class="YoutubeOverlay"
-              @click.stop.prevent="openYouTube"
+              @click.stop.prevent="openPlayer"
             >
               <v-icon small class="YoutubeIcon">
                 mdi-play-circle
@@ -181,6 +185,21 @@ function openYouTube() {
               <span class="YoutubeLabel">
                 {{ youtubeLabel }}
               </span>
+            </div>
+
+            <!-- Inline player overlay -->
+            <div v-if="showPlayer" class="PlayerOverlay">
+              <iframe
+                v-if="youtubeVideoId"
+                :key="youtubeVideoId"
+                :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`"
+                frameborder="0"
+                allow="autoplay; encrypted-media"
+                allowfullscreen
+              />
+              <v-btn icon class="ClosePlayer" @click.stop.prevent="closePlayer">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
             </div>
           </div>
         </div>
@@ -215,6 +234,13 @@ function openYouTube() {
       style="text-align: center;"
       :style="{ 'max-width': `${coverImageSize.width + 16}px` }"
     >
+      <div class="SheetInfo">
+        <span class="SongTitle" v-text="sheet.title" />
+        <span v-if="youtubeViewCount" class="ViewCount">
+          {{ youtubeLabel }}
+        </span>
+      </div>
+
       <div
         class="text-no-wrap font-weight-bold"
         :style="{
@@ -330,6 +356,56 @@ function openYouTube() {
       gap: 6px;
       cursor: pointer;
       z-index: 4;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .PlayerOverlay {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    .PlayerOverlay iframe {
+      width: 100%;
+      height: 100%;
+    }
+
+    .ClosePlayer {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 6;
+      background: rgba(0, 0, 0, 0.6) !important;
+      color: white !important;
+    }
+
+    .SheetInfo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .SongTitle {
+      font-weight: bold;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 70%;
+      display: inline-block;
+    }
+
+    .ViewCount {
+      font-size: 0.85rem;
+      color: rgba(0, 0, 0, 0.7);
     }
 
     .YoutubeIcon,

@@ -10,11 +10,16 @@ export default function useGameData() {
 
   // Lock icon
   function getLockedIconUrl() {
-    const base = dataSourceUrl.value.startsWith('/')
-      ? `${window.location.origin}${dataSourceUrl.value}`
-      : dataSourceUrl.value;
+    const base = dataSourceUrl.value ?? '';
+    const normalized = base.replace(/\/+$/, '');
+    const imgBase = normalized ? `${normalized}/img/` : '/img/';
 
-    return new URL('locked.png', `${base}/img/`).toString();
+    // If the base is an absolute URL, use URL() for proper resolution; otherwise return a relative path.
+    if (/^https?:\/\//.test(imgBase)) {
+      return new URL('locked.png', imgBase).toString();
+    }
+
+    return `${imgBase}locked.png`;
   }
   function getLockedIconHeight() {
     return 40;

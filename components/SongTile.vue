@@ -21,6 +21,15 @@ const {
   getLockedIconUrl,
   getLockedIconHeight,
 } = useGameData();
+
+const youtubeUrl = computed(() => song.video?.youtube?.url ?? null);
+const youtubeViewCount = computed(() => song.video?.youtube?.viewCount ?? null);
+
+function openYouTube() {
+  if (youtubeUrl.value) {
+    window.open(youtubeUrl.value, '_blank');
+  }
+}
 </script>
 
 <template>
@@ -90,7 +99,22 @@ const {
                 top: 0; right: 0;
                 transform: translate(+50%, -50%);
                 vertical-align: middle;"
+            />
+
+            <!-- YouTube play + view count overlay -->
+            <div
+              v-if="youtubeUrl"
+              class="YoutubeOverlay"
+              @click.stop.prevent="openYouTube"
+              style="position: absolute; bottom: 8px; left: 8px; display: flex; align-items: center; gap: 6px; cursor: pointer;"
             >
+              <v-icon small class="white--text" style="text-shadow: 0 0 6px rgba(0,0,0,0.9);">
+                mdi-play-circle
+              </v-icon>
+              <span class="white--text" style="text-shadow: 0 0 6px rgba(0,0,0,0.9); font-size: 0.8rem;">
+                {{ youtubeViewCount != null ? `${youtubeViewCount.toLocaleString()} views` : 'Play' }}
+              </span>
+            </div>
           </div>
         </div>
       </template>

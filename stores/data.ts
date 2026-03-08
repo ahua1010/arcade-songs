@@ -63,12 +63,30 @@ export const useDataStore = defineStore('data', () => {
     try {
       setLoadingStatus(LoadingStatus.LOADING);
 
-      const response = await fetch(`${dataSourceUrl}/data.json`);
-      const data = await response.json() as Data;
+      let data: Data;
+
+      // Prefer local static JSON (for dev / offline) when running in browser
+      if (typeof window !== 'undefined') {
+        const localResponse = await fetch(`/${gameCode}/data.json`);
+        if (localResponse.ok) {
+          data = await localResponse.json() as Data;
+        } else {
+          const response = await fetch(`${dataSourceUrl}/data.json`);
+          data = await response.json() as Data;
+        }
+      } else {
+        // On server-side render, use the CDN URL (absolute) to avoid relative URL issues
+        const response = await fetch(`${dataSourceUrl}/data.json`);
+        data = await response.json() as Data;
+      }
 
       // Optionally load video metadata (YouTube / NicoNico) if available
       try {
-        const videoResponse = await fetch(`${dataSourceUrl}/video.json`);
+        const videoUrl = typeof window !== 'undefined'
+          ? `/${gameCode}/video.json`
+          : `${dataSourceUrl}/video.json`;
+
+        const videoResponse = await fetch(videoUrl);
         if (videoResponse.ok) {
           const videoData = await videoResponse.json() as { videos: Record<string, any> };
           for (const song of data.songs) {
@@ -78,8 +96,10 @@ export const useDataStore = defineStore('data', () => {
             }
           }
         }
-      } catch {
-        // Ignore missing video metadata
+      } catch (err) {
+        // Ignore missing video metadata (e.g. on SSR or if file isn’t available)
+        // eslint-disable-next-line no-console
+        console.warn('Failed to load video metadata', err);
       }
 
       preprocessData(data, dataSourceUrl, gameCode);

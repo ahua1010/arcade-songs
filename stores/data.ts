@@ -80,6 +80,14 @@ export const useDataStore = defineStore('data', () => {
         data = await response.json() as Data;
       }
 
+      // Ensure video property exists for reactivity in Vue 2/Pinia
+      for (const song of data.songs) {
+        if (!(song as any).video) {
+          // eslint-disable-next-line no-param-reassign
+          (song as any).video = {};
+        }
+      }
+
       // Optionally load video metadata (YouTube / NicoNico) if available
       try {
         const videoUrl = typeof window !== 'undefined'

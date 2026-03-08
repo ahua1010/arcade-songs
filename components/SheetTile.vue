@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, Ref } from '@nuxtjs/composition-api';
+import { computed, inject, Ref, ref } from '@nuxtjs/composition-api';
 import useDarkMode from '~/composables/useDarkMode';
 import useGameInfo from '~/composables/useGameInfo';
 import useGameData from '~/composables/useGameData';
@@ -44,6 +44,12 @@ const isSheetSelected = computed(
 );
 
 const youtubeUrl = computed(() => props.sheet.video?.youtube?.url ?? null);
+const youtubeVideoId = computed(() => {
+  const url = youtubeUrl.value;
+  if (!url) return null;
+  const match = url.match(/[?&]v=([^&]+)/);
+  return match?.[1] ?? null;
+});
 const youtubeViewCount = computed(() => props.sheet.video?.youtube?.viewCount ?? null);
 const youtubeLabel = computed(() => (
   youtubeViewCount.value != null
@@ -51,9 +57,11 @@ const youtubeLabel = computed(() => (
     : 'Play'
 ));
 
+const showVideoDialog = ref(false);
+
 function openYouTube() {
-  if (youtubeUrl.value) {
-    window.open(youtubeUrl.value, '_blank');
+  if (youtubeVideoId.value) {
+    showVideoDialog.value = true;
   }
 }
 </script>
@@ -180,7 +188,28 @@ function openYouTube() {
       <span v-text="sheet.title" />
     </v-tooltip>
 
-    <!-- difficulty & level & description -->
+    <v-dialog v-model="showVideoDialog" max-width="640">
+      <v-card>
+        <v-responsive aspect-ratio="16/9">
+          <iframe
+            v-if="youtubeVideoId"
+            :key="youtubeVideoId"
+            :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`"
+            frameborder="0"
+            allow="autoplay; encrypted-media"
+            allowfullscreen
+            style="width: 100%; height: 100%;"
+          />
+        </v-responsive>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="showVideoDialog = false">
+            {{ $t('ui.close') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <div
       class="mt-4"
       style="text-align: center;"

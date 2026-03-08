@@ -22,7 +22,17 @@ export function buildEmptyData(): Data {
 
 export function preprocessData(data: Data, dataSourceUrl: string, gameCode: string) {
   function resolveUrl(filePath: string | undefined, baseUrl: string) {
-    return filePath != null ? new URL(filePath, baseUrl).toString() : filePath;
+    if (filePath == null) return filePath;
+
+    // Support relative dataSourceUrl (e.g. "/maimai") for local static hosting.
+    // `new URL(..., "/maimai")` is invalid because base must be absolute.
+    if (baseUrl.startsWith('/')) {
+      const base = baseUrl.replace(/\/+$/, '');
+      const path = filePath.replace(/^\/+/, '');
+      return `${base}/${path}`;
+    }
+
+    return new URL(filePath, baseUrl).toString();
   }
   function computeNotePercentages(noteCounts: Record<string, number | null> | undefined) {
     return noteCounts != null ? Object.fromEntries(

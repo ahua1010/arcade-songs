@@ -10,7 +10,11 @@ export default function useGameData() {
 
   // Lock icon
   function getLockedIconUrl() {
-    return new URL('locked.png', `${dataSourceUrl.value}/img/`).toString();
+    const base = dataSourceUrl.value.startsWith('/')
+      ? `${window.location.origin}${dataSourceUrl.value}`
+      : dataSourceUrl.value;
+
+    return new URL('locked.png', `${base}/img/`).toString();
   }
   function getLockedIconHeight() {
     return 40;

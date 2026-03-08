@@ -24,6 +24,12 @@ const props = withDefaults(defineProps<{
 
 const { isDarkMode } = useDarkMode();
 const { coverImageSize } = useGameInfo();
+
+const tileSize = computed(() => ({
+  width: Math.round(coverImageSize.width * 1.35),
+  height: Math.round(coverImageSize.height * 1.35),
+}));
+
 const {
   getLockedIconUrl,
   getLockedIconHeight,
@@ -103,8 +109,8 @@ function closePlayer() {
             :class="{ 'dark-style': isDarkMode }"
             style="vertical-align: middle;"
             :style="{
-              'width': `${coverImageSize.width}px`,
-              'height': `${coverImageSize.height}px`,
+              'width': `${tileSize.value.width}px`,
+              'height': `${tileSize.value.height}px`,
             }"
           >
             <!-- sheet cover image -->
@@ -173,18 +179,16 @@ function closePlayer() {
               v-text="sheet.internalLevel"
             />
 
-            <!-- YouTube play + view count overlay -->
+            <!-- YouTube play overlay -->
             <div
               v-if="youtubeUrl && !showPlayer"
               class="YoutubeOverlay"
               @click.stop.prevent="openPlayer"
+              title="Play preview"
             >
               <v-icon small class="YoutubeIcon">
                 mdi-play-circle
               </v-icon>
-              <span class="YoutubeLabel">
-                {{ youtubeLabel }}
-              </span>
             </div>
 
             <!-- Inline player overlay -->

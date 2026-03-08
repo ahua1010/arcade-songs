@@ -22,7 +22,7 @@ export default function useGameInfo() {
   const gameTitle = computed(() => siteInfo.value?.gameTitle ?? undefined);
   const themeColor = computed(() => siteInfo.value?.themeColor ?? '#424242');
   const coverImageSize = computed(() => (
-    siteInfo.value?.coverImageSize ?? { width: 100, height: 100 }
+    siteInfo.value?.coverImageSize ?? { width: 160, height: 160 }
   ));
   const dataSourceUrl = computed(() => siteInfo.value?.dataSourceUrl ?? undefined);
   const accessCounterUrl = computed(() => (

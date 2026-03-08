@@ -20,6 +20,12 @@ const { song, hideTitle, hideCover, hideLock } = toRefs(props);
 
 const { isDarkMode } = useDarkMode();
 const { coverImageSize } = useGameInfo();
+const safeCoverSize = computed(() => {
+  const size = coverImageSize.value ?? { width: 100, height: 100 };
+  const width = Number(size.width) || 100;
+  const height = Number(size.height) || 100;
+  return { width, height };
+});
 const {
   getLockedIconUrl,
   getLockedIconHeight,
@@ -48,7 +54,7 @@ function openYouTube() {
   >
     <v-tooltip
       top
-      :nudge-bottom="42 + coverImageSize.height / 2"
+      :nudge-bottom="42 + safeCoverSize.height / 2"
       :disabled="$vuetify.breakpoint.mobile || hideTitle"
     >
       <template #activator="{ on }">
@@ -71,8 +77,8 @@ function openYouTube() {
             :class="{ 'dark-style': isDarkMode }"
             style="vertical-align: middle;"
             :style="{
-              'width': `${coverImageSize.width}px`,
-              'height': `${coverImageSize.height}px`,
+              'width': `${safeCoverSize.width}px`,
+              'height': `${safeCoverSize.height}px`,
             }"
           >
             <!-- song cover image -->
@@ -144,9 +150,7 @@ function openYouTube() {
   .CoverContainer {
     display: inline-block;
     position: relative;
-    box-shadow:
-      // the gray shadows
-      0 14px 28px rgb(0 0 0 / 25%),
+      z-index: 2;
       0 10px 10px rgb(0 0 0 / 22%);
     transition: transform 250ms;
 
@@ -166,6 +170,7 @@ function openYouTube() {
       align-items: center;
       gap: 6px;
       cursor: pointer;
+      z-index: 3;
     }
 
     .YoutubeIcon,

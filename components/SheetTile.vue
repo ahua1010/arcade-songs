@@ -25,10 +25,22 @@ const props = withDefaults(defineProps<{
 const { isDarkMode } = useDarkMode();
 const { coverImageSize } = useGameInfo();
 
+const coverSize = computed(() => {
+  // Use a slightly larger default so the grid tiles feel more clickable/usable by default.
+  const defaultSize = { width: 160, height: 160 };
+  const size = coverImageSize.value ?? defaultSize;
+  const width = Math.max(120, Number(size.width) || defaultSize.width);
+  const height = Math.max(120, Number(size.height) || defaultSize.height);
+  return { width, height };
+});
+
 const tileSize = computed(() => ({
-  width: Math.round(coverImageSize.width * 1.35),
-  height: Math.round(coverImageSize.height * 1.35),
+  // Scale up in grid view to make previews feel more prominent.
+  width: Math.round(coverSize.value.width * 1.8),
+  height: Math.round(coverSize.value.height * 1.8),
 }));
+
+const safeCoverSize = computed(() => coverSize.value);
 
 const {
   getLockedIconUrl,
@@ -63,6 +75,8 @@ const youtubeLabel = computed(() => (
     : 'Play'
 ));
 
+const coverMaxWidth = computed(() => coverSize.value.width + 16);
+
 const showPlayer = ref(false);
 
 function openPlayer() {
@@ -86,24 +100,24 @@ function closePlayer() {
   >
     <v-tooltip
       top
-      :nudge-bottom="46 + coverImageSize.height / 2"
+      :nudge-bottom="46 + safeCoverSize.height / 2"
       :disabled="$vuetify.breakpoint.mobile || hideTitle"
     >
       <template #activator="{ on }">
-        <!-- invisible blocking panel (prevent long-press and right-click on images) -->
         <div
-          class="BlockingPanel"
+          class="ActivatorWrapper"
           v-on="{ ...on, ...$listeners }"
           @dragstart.prevent
           @contextmenu.prevent
-        />
-
-        <!-- cover image & icons -->
-        <div
-          class="CoverBackground pa-2"
-          :class="{ 'rainbow-background': sheet.isSpecial }"
-          v-on="on"
         >
+          <!-- invisible blocking panel (prevent long-press and right-click on images) -->
+          <div class="BlockingPanel" />
+
+          <!-- cover image & icons -->
+          <div
+            class="CoverBackground pa-2"
+            :class="{ 'rainbow-background': sheet.isSpecial }"
+          >
           <div
             class="CoverContainer grey"
             :class="{ 'dark-style': isDarkMode }"
@@ -207,36 +221,15 @@ function closePlayer() {
             </div>
           </div>
         </div>
+      </div>
       </template>
       <span v-text="sheet.title" />
     </v-tooltip>
 
-    <v-dialog v-model="showVideoDialog" max-width="640">
-      <v-card>
-        <v-responsive aspect-ratio="16/9">
-          <iframe
-            v-if="youtubeVideoId"
-            :key="youtubeVideoId"
-            :src="`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`"
-            frameborder="0"
-            allow="autoplay; encrypted-media"
-            allowfullscreen
-            style="width: 100%; height: 100%;"
-          />
-        </v-responsive>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn text @click="showVideoDialog = false">
-            {{ $t('ui.close') }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
     <div
       class="mt-4"
       style="text-align: center;"
-      :style="{ 'max-width': `${coverImageSize.width + 16}px` }"
+      :style="{ 'max-width': `${coverMaxWidth}px` }"
     >
       <div class="SheetInfo">
         <span class="SongTitle" v-text="sheet.title" />
@@ -289,6 +282,11 @@ function closePlayer() {
     position: absolute;
     inset: 0;
     z-index: 1;
+  }
+
+  .ActivatorWrapper {
+    display: inline-block;
+    position: relative;
   }
 
   .CoverBackground {

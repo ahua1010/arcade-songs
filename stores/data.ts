@@ -83,7 +83,6 @@ export const useDataStore = defineStore('data', () => {
       // Ensure video property exists for reactivity in Vue 2/Pinia
       for (const song of data.songs) {
         if (!(song as any).video) {
-          // eslint-disable-next-line no-param-reassign
           (song as any).video = {};
         }
       }
@@ -97,24 +96,40 @@ export const useDataStore = defineStore('data', () => {
           : `${dataSourceUrl}/video.json`;
 
         const videoResponse = await fetch(videoUrl);
-        if (videoResponse.ok) {
-          const videoData = await videoResponse.json() as { videos: Record<string, any> };
-          for (const song of data.songs) {
-            if (song.songId && videoData.videos?.[song.songId]) {
-              // eslint-disable-next-line no-param-reassign
-              (song as any).video = videoData.videos[song.songId];
-            }
+        if (!videoResponse.ok) {
+          throw new Error(`Failed to fetch video metadata (${videoResponse.status})`);
+        }
+
+        const videoData = await videoResponse.json() as {
+          videos: Record<string, any>;
+        };
+
+        for (const song of data.songs) {
+          if (song.songId && videoData.videos?.[song.songId]) {
+            // Ensure we mutate the existing `video` object rather than replace it.
+            // This keeps Vue 2 reactivity working correctly.
+            const songAny = song as any;
+            songAny.video = songAny.video ?? {};
+            Object.assign(songAny.video, videoData.videos[song.songId]);
           }
         }
       } catch (err) {
-        // Fallback: try to load the bundled static JSON (may be available even if the route is protected)
+        // Fallback: try to load the bundled static JSON.
+        // This may work even if the main route is protected.
         try {
           // NOTE: dynamic import uses webpack alias; this makes it work in both build and dev.
-          const videoData = (await import(`~/static/${gameCode}/video.json`)) as { videos: Record<string, any> };
+          const videoData = (await import(
+            `~/static/${gameCode}/video.json`
+          )) as {
+            videos: Record<string, any>;
+          };
           for (const song of data.songs) {
             if (song.songId && videoData.videos?.[song.songId]) {
-              // eslint-disable-next-line no-param-reassign
-              (song as any).video = videoData.videos[song.songId];
+              // Ensure we mutate the existing `video` object rather than replace it.
+              // This keeps Vue 2 reactivity working correctly.
+              const songAny = song as any;
+              songAny.video = songAny.video ?? {};
+              Object.assign(songAny.video, videoData.videos[song.songId]);
             }
           }
         } catch (innerErr) {

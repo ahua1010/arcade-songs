@@ -127,14 +127,13 @@ export default function useGameData() {
     if (sheet.searchUrl === null) return null;
     if (sheet.searchUrl !== undefined) return sheet.searchUrl;
 
-    const escapedGameTitle = gameTitle.value;
     const escapedTitle = sheet.title ?? '';
-    const escapedDifficulty = getDifficultyName(sheet.difficulty);
+    const escapedArtist = sheet.artist ?? '';
 
     const url = new URL('https://www.youtube.com/results');
     url.searchParams.set(
       'search_query',
-      `${escapedGameTitle} ${escapedTitle} ${escapedDifficulty}`.replaceAll('-', '\\-'),
+      `${escapedTitle} ${escapedArtist}`.replaceAll('-', '\-'),
     );
 
     return url.toString();

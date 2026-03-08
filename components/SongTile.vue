@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed } from '@nuxtjs/composition-api';
+import { computed, toRefs } from '@nuxtjs/composition-api';
 import useDarkMode from '~/composables/useDarkMode';
 import useGameInfo from '~/composables/useGameInfo';
 import useGameData from '~/composables/useGameData';
 import type { Song } from '~/types';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   song: Song,
   hideTitle?: boolean,
   hideCover?: boolean,
@@ -16,6 +16,8 @@ withDefaults(defineProps<{
   hideLock: false,
 });
 
+const { song, hideTitle, hideCover, hideLock } = toRefs(props);
+
 const { isDarkMode } = useDarkMode();
 const { coverImageSize } = useGameInfo();
 const {
@@ -23,8 +25,13 @@ const {
   getLockedIconHeight,
 } = useGameData();
 
-const youtubeUrl = computed(() => song.video?.youtube?.url ?? null);
-const youtubeViewCount = computed(() => song.video?.youtube?.viewCount ?? null);
+const youtubeUrl = computed(() => song.value.video?.youtube?.url ?? null);
+const youtubeViewCount = computed(() => song.value.video?.youtube?.viewCount ?? null);
+const youtubeLabel = computed(() => (
+  youtubeViewCount.value != null
+    ? `${youtubeViewCount.value.toLocaleString()} views`
+    : 'Play'
+));
 
 function openYouTube() {
   if (youtubeUrl.value) {
@@ -92,28 +99,23 @@ function openYouTube() {
             <!-- locked icon -->
             <img
               v-if="song.isLocked && !hideLock"
+              class="LockedIcon"
               :src="getLockedIconUrl()"
               :height="getLockedIconHeight()"
               alt=""
-              style="
-                position: absolute;
-                top: 0; right: 0;
-                transform: translate(+50%, -50%);
-                vertical-align: middle;"
-            />
+            >
 
             <!-- YouTube play + view count overlay -->
             <div
               v-if="youtubeUrl"
               class="YoutubeOverlay"
               @click.stop.prevent="openYouTube"
-              style="position: absolute; bottom: 8px; left: 8px; display: flex; align-items: center; gap: 6px; cursor: pointer;"
             >
-              <v-icon small class="white--text" style="text-shadow: 0 0 6px rgba(0,0,0,0.9);">
+              <v-icon small class="YoutubeIcon">
                 mdi-play-circle
               </v-icon>
-              <span class="white--text" style="text-shadow: 0 0 6px rgba(0,0,0,0.9); font-size: 0.8rem;">
-                {{ youtubeViewCount != null ? `${youtubeViewCount.toLocaleString()} views` : 'Play' }}
+              <span class="YoutubeLabel">
+                {{ youtubeLabel }}
               </span>
             </div>
           </div>
@@ -147,6 +149,34 @@ function openYouTube() {
       0 14px 28px rgb(0 0 0 / 25%),
       0 10px 10px rgb(0 0 0 / 22%);
     transition: transform 250ms;
+
+    .LockedIcon {
+      position: absolute;
+      top: 0;
+      right: 0;
+      transform: translate(+50%, -50%);
+      vertical-align: middle;
+    }
+
+    .YoutubeOverlay {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .YoutubeIcon,
+    .YoutubeLabel {
+      color: white;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+    }
+
+    .YoutubeLabel {
+      font-size: 0.8rem;
+    }
 
     .CoverImage {
       width: 100%;

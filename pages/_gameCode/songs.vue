@@ -19,6 +19,10 @@ const {
 } = useGameData();
 const { viewSheet } = useSheetDialog();
 
+function openYouTube(url?: string | null) {
+  if (url) window.open(url, '_blank');
+}
+
 const searchInput = ref('');
 
 const songs = computed(() => dataStore.currentData.songs);
@@ -40,6 +44,13 @@ const headers: ComputedRef<DataTableHeader[]> = computed(() => [
     text: i18n.t('term.title') as string,
     value: 'title',
     width: 250,
+  },
+  {
+    text: '',
+    value: 'video',
+    width: 120,
+    sortable: false,
+    searchable: false,
   },
   {
     text: i18n.t('term.artist') as string,
@@ -116,6 +127,19 @@ export default defineComponent({
         <router-link :to="{ name: 'gameCode-song', query: { id: song.songId } }">
           {{ song.title }}
         </router-link>
+      </template>
+      <template #item.video="{ item: song }">
+        <v-btn
+          icon
+          small
+          :disabled="!song.video?.youtube?.url"
+          @click.stop.prevent="openYouTube(song.video?.youtube?.url)"
+        >
+          <v-icon>mdi-play-circle</v-icon>
+        </v-btn>
+        <span v-if="song.video?.youtube?.viewCount" class="ml-1">
+          {{ song.video.youtube.viewCount.toLocaleString() }}
+        </span>
       </template>
       <template #item.sheets="{ item: song }">
         <v-btn
